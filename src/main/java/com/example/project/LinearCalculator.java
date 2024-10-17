@@ -2,10 +2,10 @@ package com.example.project;
 public class LinearCalculator{
     //INSTANCE VARIABLES 
     //4 INTEGER variables (name them: x1,x2,y1,y2) 
-    private int x1 = 0;
-    private int x2 = 0;
-    private int y1 = 0;
-    private int y2 = 0;
+    private int x1;
+    private int x2;
+    private int y1;
+    private int y2;
 
 
     //CONSTRUCTOR
@@ -13,32 +13,18 @@ public class LinearCalculator{
     //For example, "(1,2)" and "(3,4)" would be two parameter values 
     //You will have to parse the string into 4 integers, representing the 2 points.
     public LinearCalculator(String coord1, String coord2){ // <--add 2 string parameters to this constructor
-        String coord1P1 = coord1.substring(1,3);
-        String coord1P2 = coord1.substring(3);
-        String coord2P1 = coord2.substring(1,3);
-        String coord2P2 = coord2.substring(3);
-        int ind1P1 = coord1P1.indexOf("-");
-        int ind1P2 = coord1P2.indexOf("-");
-        int ind2P1 = coord2P1.indexOf("-");
-        int ind2P2 = coord2P2.indexOf("-");
 
-        this.x1 = Integer.valueOf(coord1.substring(1,2)); //parsing the string into the first integer, which represents x1//
-        this.x2 = Integer.valueOf(coord2.substring(1,2)); //parsing the string into the second integer, which represents x2//
-        this.y1 = Integer.valueOf(coord1.substring(3,4)); //parsing the string into the third integer, which represents y1//
-        this.y2 = Integer.valueOf(coord2.substring(3,4)); //parsing the string into the fourth integer, which represents y2//
+        int parenthesis1 = coord1.indexOf(")");
+        int parenthesis2 = coord2.indexOf(")");
+        String newPt1 = coord1.substring(1, parenthesis1);
+        String newPt2 = coord2.substring(1, parenthesis2);
 
-        if(ind1P1 != -1) {
-            this.x1 = Integer.valueOf(coord1.substring(ind1P1, ind1P1 + 2)); //parsing the string into the first integer, which represents x1//
-        }
-        if(ind2P1 != -1) {
-            this.x1 = Integer.valueOf(coord2.substring(ind2P1, ind2P1 + 2)); //parsing the string into the second integer, which represents x2//
-        }
-        if(ind1P2 != -1) {
-            this.y1 = Integer.valueOf(coord1.substring(ind1P2, ind1P2 + 2)); //parsing the string into the third integer, which represents y1//
-        }
-        if(ind2P2 != -1) {
-            this.y1 = Integer.valueOf(coord2.substring(ind2P2, ind2P2 + 2)); //parsing the string into the fourth integer, which represents y2//
-        }
+        String[] pt = newPt1.split(",");
+        x1 = Integer.parseInt(pt[0]);
+        y1 = Integer.parseInt(pt[1]);
+        String[] pt2 = newPt2.split(",");
+        x2 = Integer.parseInt(pt2[0]);
+        y2 = Integer.parseInt(pt2[1]);
     }
 
 
@@ -75,7 +61,7 @@ public class LinearCalculator{
     //calculates the distance between the two points to the nearest HUNDREDTH and returns the value.
     public double distance() {
         double ptDist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-        double roundedDist = Math.round(ptDist * 100.0) / 100.0;
+        double roundedDist = roundedToHundredth(ptDist);
         return roundedDist;
     }
 
@@ -83,22 +69,28 @@ public class LinearCalculator{
     //calculates the y intercept of the equation and returns the value to the nearest HUNDREDTH
     //if y-int if undefined, should return -999.99
     public double yInt(){
-
-        return 0.0;
+        double slope = slope();
+        if(slope == -999.99) {
+            return -999.99;
+        } else {
+            double intercept = y1 - (slope * x1);
+            intercept = roundedToHundredth(intercept);
+            return intercept;
+        }
     }
 
     //slope() -> returns a double. 
     //calculates the slope of the equations and returns the value to the nearest HUNDREDTH
     //if slope is undefined, should return -999.99
     public double slope(){
-        double ptSlope = (y2 - y1) / (x2 - x1);
-        double roundedSlope = Math.round(ptSlope * 100.0) / 100.0;
+        double roundedSlope;
         if((x2-x1) == 0) {
             roundedSlope = -999.99;
             return roundedSlope;
-        } else {
-            return roundedSlope;
         }
+        roundedSlope = (double) (y2 - y1) / (x2 - x1); //You need to cast one of the dividends to a double in order to prevent int division and returning the incorrect slope
+        roundedSlope = roundedToHundredth(roundedSlope);
+        return roundedSlope;
     }
 
     //equations() -> returns a String.
@@ -106,7 +98,25 @@ public class LinearCalculator{
     //if the equation has no slope, the equation should return -> "undefined"
     //HINT: You may need other custom methods to decrease the amount of code in the equations() method
     public String equation(){
-        return "";
+        String finalEq;
+        if(yInt() == 0) {
+            finalEq = "y=" + slope() + "x";
+        } else {
+            if(slope() == -999.99) {
+                finalEq = "undefined";
+            } else {
+                if(slope() == 0) {
+                    finalEq = "y=" + yInt();
+                } else {
+                    if(yInt() < 0) {
+                        finalEq = "y=" + slope() + "x" + yInt();
+                    } else {
+                        finalEq = "y=" + slope() + "x+" + yInt();
+                    }
+                }
+            }
+        }
+        return finalEq;
     }
 
 
@@ -123,9 +133,9 @@ public class LinearCalculator{
     public String printInfo(){
         String str = "The two points are: (" + x1 + "," + y1 + ")";
         str += " and " + "(" + x2 + "," + y2 + ")";
-        str += "\nThe equation of the line between these points is: " ;
+        str += "\nThe equation of the line between these points is: " + equation();
         str += "\nThe slope of this line is: " + slope();
-        str += "\nThe y-intercept of the line is: ";
+        str += "\nThe y-intercept of the line is: " + yInt();
         str += "\nThe distance between the two points is: " + distance();
  
         return str;
